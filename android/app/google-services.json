@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "81452165653",
+    "project_id": "steam-wishlist-manager",
+    "storage_bucket": "steam-wishlist-manager.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81452165653:android:cf13421ca29da075ed3c1c",
+        "android_client_info": {
+          "package_name": "com.example.steam_wishlist_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNJTfsMam2r56g_bDqmQC7rqRdh1kFeU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
