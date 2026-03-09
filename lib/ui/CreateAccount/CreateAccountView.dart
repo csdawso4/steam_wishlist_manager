@@ -16,16 +16,30 @@ class CreateAccountView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Username"),
-              TextField(onChanged: (username) => {createAccountVM.setUsername(username)}),
+              TextField(
+                onChanged: (username) => {
+                  createAccountVM.setUsername(username),
+                },
+              ),
               Text("Email"),
-              TextField(onChanged: (email) => {createAccountVM.setEmail(email)}),
+              TextField(
+                onChanged: (email) => {createAccountVM.setEmail(email)},
+              ),
               Text("Password"),
               TextField(
-                onChanged: (password) => {createAccountVM.setPassword(password)},
+                onChanged: (password) => {
+                  createAccountVM.setPassword(password),
+                },
               ),
               FloatingActionButton(
                 onPressed: () => {createAccountVM.createAccount(context)},
                 child: Text("Create Account"),
+              ),
+              ListenableBuilder(
+                listenable: createAccountVM,
+                builder: (BuildContext context, Widget? child) {
+                  return Text(createAccountVM.errorMsg ?? "");
+                },
               ),
             ],
           ),

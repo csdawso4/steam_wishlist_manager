@@ -25,6 +25,12 @@ class SignInView extends StatelessWidget {
                 onPressed: () => {signInVM.signIn(context)},
                 child: Text("Sign In"),
               ),
+              ListenableBuilder(
+                listenable: signInVM,
+                builder: (BuildContext context, Widget? child) {
+                  return Text(signInVM.errorMsg ?? "");
+                },
+              ),
               SizedBox(height: 20),
               Text("Don't have an account?"),
               FloatingActionButton(

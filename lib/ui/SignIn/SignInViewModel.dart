@@ -2,37 +2,49 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistView.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
+import '../../data/models/SWMUser.dart';
+import '../../data/repositories/DatabaseRepo.dart';
+import '../../data/repositories/FirebaseRepo.dart';
 import '../CreateAccount/CreateAccountView.dart';
 import '../CreateAccount/CreateAccountViewModel.dart';
 
 class SignInViewModel extends ChangeNotifier {
-  String? email, password;
+  String? email, password, errorMsg;
 
   Future<void> signIn(BuildContext context) async {
     try {
-      UserCredential cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email ?? "",
-        password: password ?? "",
-      );
-      if (cred.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WishlistView(wishlistVM: WishlistViewModel(user: cred.user!)),
-          ),
-        );
+      if (emailAndPasswordAreValid()) {
+        UserCredential cred = await FirebaseRepo.signIn(email!, password!);
+        if (cred.user != null) {
+          SWMUser user = await DatabaseRepo.getUser(cred.user!.uid);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => WishlistView(wishlistVM: WishlistViewModel(user: user)),
+            ),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        debugPrint('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        debugPrint('Wrong password provided for that user.');
-      } else {
-        debugPrint('FirebaseAuthException: ${e.message}');
-      }
-    } on Exception catch (e) {
-      debugPrint('Caught error: ${e.toString()}');
+      errorMsg = "Incorrect email or password";
+      notifyListeners();
     }
+  }
+
+  bool emailAndPasswordAreValid() {
+    if (email == null || email!.isEmpty) {
+      errorMsg = "Please enter an email";
+    } else if (password == null || password!.isEmpty) {
+      errorMsg = "Please enter a password";
+    } else if (!RegExp(r'\w+@\w+\.\w+').hasMatch(email!)) {
+      errorMsg = "Please enter a valid email";
+    } else {
+      errorMsg = null;
+      notifyListeners();
+      return true;
+    }
+    notifyListeners();
+    return false;
   }
 
   Future<void> goToCreateAccount(BuildContext context) async {

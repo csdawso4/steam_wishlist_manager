@@ -15,6 +15,8 @@ class WishlistView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text("Welcome ${wishlistVM.user.username}!"),
+              SizedBox(height: 20),
               Text("<WISHLIST>"),
               SizedBox(height: 20),
               FloatingActionButton(

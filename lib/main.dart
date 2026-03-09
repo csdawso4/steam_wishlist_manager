@@ -5,6 +5,8 @@ import 'package:steam_wishlist_manager/ui/SignIn/SignInView.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInViewModel.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistView.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
+import 'data/models/SWMUser.dart';
+import 'data/repositories/DatabaseRepo.dart';
 import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
@@ -15,7 +17,11 @@ Future<void> main() async {
     url: 'https://omwsjuhjvdtrumtxrbdc.supabase.co',
     anonKey: 'sb_publishable_-iBJqiDtWU5phXmV4ZBJYA_R2cEVn_n',
   );
-  FirebaseAuth.instance.authStateChanges().listen((User? user) {
+  FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) async {
+    SWMUser? user;
+    if (firebaseUser != null) {
+      user = await DatabaseRepo.getUser(firebaseUser.uid);
+    }
     runApp(MyApp(user: user));
   });
 }
@@ -23,7 +29,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.user});
 
-  final User? user;
+  final SWMUser? user;
 
   @override
   Widget build(BuildContext context) {
