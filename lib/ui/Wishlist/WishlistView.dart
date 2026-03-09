@@ -34,9 +34,14 @@ class WishlistView extends StatelessWidget {
                 },
                 suggestionsBuilder:
                     (BuildContext context, SearchController controller) {
-                      return wishlistVM.search(controller);
-                    },
+                  return wishlistVM.search(controller);
+                },
               ),
+              SizedBox(height: 20),
+              ListenableBuilder(listenable: wishlistVM,
+                  builder: (BuildContext context, Widget? child) {
+                    return wishlistVM.getWishlist();
+                  }),
               SizedBox(height: 20),
               FloatingActionButton(
                 onPressed: () => {wishlistVM.signOut(context)},

@@ -39,16 +39,7 @@ class DatabaseRepo {
         return null;
       }
       Map<String, dynamic> gameMap = response[0];
-      return Game(
-          gid: gameMap["gid"],
-          name: gameMap["name"],
-          shortdesc: gameMap["shortdesc"],
-          capsuleimgurl: gameMap["capsuleimgurl"],
-          currentprice: gameMap["currentprice"],
-          currentpercent: gameMap["currentpercent"],
-          bestrecordedprice: gameMap["bestrecordedprice"],
-          bestrecordedpercent: gameMap["bestrecordedpercent"]
-      );
+      return gameFromGameMap(gameMap);
     } on Exception catch (e) {
       debugPrint("$e");
       return null;
@@ -66,5 +57,45 @@ class DatabaseRepo {
       "bestrecordedprice": game.bestrecordedprice,
       "bestrecordedpercent": game.bestrecordedpercent
     });
+  }
+
+  static Future<void> wishlistGame(String uid, int gid) async {
+    await supabase.from("wishlist").insert({
+      "uid": uid,
+      "gid": gid
+    });
+  }
+
+  static Future<List<Game>> getWishlistedGames(String uid) async {
+    final response = await supabase
+        .from('game')
+        .select('''
+    *,
+    wishlist!inner (
+      uid
+    )
+  ''')
+        .eq('wishlist.uid', uid);
+
+    List<Game> games = List.empty(growable: true);
+
+    for (var gameMap in response) {
+      games.add(gameFromGameMap(gameMap));
+    }
+
+    return games;
+  }
+
+  static Game gameFromGameMap(Map<String, dynamic> gameMap) {
+    return Game(
+        gid: gameMap["gid"],
+        name: gameMap["name"],
+        shortdesc: gameMap["shortdesc"],
+        capsuleimgurl: gameMap["capsuleimgurl"],
+        currentprice: gameMap["currentprice"],
+        currentpercent: gameMap["currentpercent"],
+        bestrecordedprice: gameMap["bestrecordedprice"],
+        bestrecordedpercent: gameMap["bestrecordedpercent"]
+    );
   }
 }

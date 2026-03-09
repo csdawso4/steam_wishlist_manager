@@ -19,17 +19,22 @@ Future<void> main() async {
   );
   FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) async {
     SWMUser? user;
+    WishlistViewModel? wishlistVM;
     if (firebaseUser != null) {
       user = await DatabaseRepo.getUser(firebaseUser.uid);
-    }
-    runApp(MyApp(user: user));
+      debugPrint("gere");
+      wishlistVM = await WishlistViewModel.create(user);
+      debugPrint("ger2e");
+        }
+    runApp(MyApp(user: user, wishlistVM: wishlistVM));
   });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.user});
+  const MyApp({super.key, required this.user, required this.wishlistVM});
 
   final SWMUser? user;
+  final WishlistViewModel? wishlistVM;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: (user == null) ? SignInView(signInVM: SignInViewModel()) : WishlistView(wishlistVM: WishlistViewModel(user: user!)),
+      home: (user == null) ? SignInView(signInVM: SignInViewModel()) : WishlistView(wishlistVM: wishlistVM!),
     );
   }
 }

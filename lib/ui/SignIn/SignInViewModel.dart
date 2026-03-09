@@ -17,10 +17,11 @@ class SignInViewModel extends ChangeNotifier {
         UserCredential cred = await FirebaseRepo.signIn(email!, password!);
         if (cred.user != null) {
           SWMUser user = await DatabaseRepo.getUser(cred.user!.uid);
+          WishlistViewModel wishlistVM = await WishlistViewModel.create(user);
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => WishlistView(wishlistVM: WishlistViewModel(user: user)),
+              builder: (context) => WishlistView(wishlistVM: wishlistVM),
             ),
           );
         }

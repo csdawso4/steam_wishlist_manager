@@ -14,13 +14,22 @@ class CreateAccountViewModel extends ChangeNotifier {
       debugPrint("create account button pressed");
       if (emailPasswordUsernameAreValid()) {
         debugPrint("stuff was valid");
-        UserCredential cred = await FirebaseRepo.createAccount(email!, password!);
+        UserCredential cred = await FirebaseRepo.createAccount(
+          email!,
+          password!,
+        );
         if (cred.user != null) {
-          SWMUser user = await DatabaseRepo.createUser(cred.user!.uid, email!, username!);
+          SWMUser user = await DatabaseRepo.createUser(
+            cred.user!.uid,
+            email!,
+            username!,
+          );
+          WishlistViewModel wishlistVM = await WishlistViewModel.create(user);
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) =>
-                WishlistView(wishlistVM: WishlistViewModel(user: user))),
+            MaterialPageRoute(
+              builder: (context) => WishlistView(wishlistVM: wishlistVM),
+            ),
           );
         }
       }
@@ -44,11 +53,12 @@ class CreateAccountViewModel extends ChangeNotifier {
       errorMsg = "Please enter a username";
     } else if (!RegExp(r'\w+@\w+\.\w+').hasMatch(email!)) {
       errorMsg = "Please enter a valid email";
-    } else if (password!.length < 6
-        || !password!.contains(RegExp(r'[A-Z]'))
-        || !password!.contains(RegExp(r'[a-z]'))
-        || !password!.contains(RegExp(r'[0-9]'))) {
-      errorMsg = "Please enter a valid password: 6+ characters, at least one lowercase letter, one uppercase letter, and one number";
+    } else if (password!.length < 6 ||
+        !password!.contains(RegExp(r'[A-Z]')) ||
+        !password!.contains(RegExp(r'[a-z]')) ||
+        !password!.contains(RegExp(r'[0-9]'))) {
+      errorMsg =
+          "Please enter a valid password: 6+ characters, at least one lowercase letter, one uppercase letter, and one number";
     } else if (username!.length < 3) {
       errorMsg = "Please enter a valid username: 3+ characters";
     } else {
