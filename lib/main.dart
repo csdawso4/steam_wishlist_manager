@@ -22,10 +22,8 @@ Future<void> main() async {
     WishlistViewModel? wishlistVM;
     if (firebaseUser != null) {
       user = await DatabaseRepo.getUser(firebaseUser.uid);
-      debugPrint("gere");
       wishlistVM = await WishlistViewModel.create(user);
-      debugPrint("ger2e");
-        }
+    }
     runApp(MyApp(user: user, wishlistVM: wishlistVM));
   });
 }
@@ -43,7 +41,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: (user == null) ? SignInView(signInVM: SignInViewModel()) : WishlistView(wishlistVM: wishlistVM!),
+      home: (user == null)
+          ? SignInView(signInVM: SignInViewModel())
+          : WishlistView(wishlistVM: wishlistVM!),
     );
   }
 }

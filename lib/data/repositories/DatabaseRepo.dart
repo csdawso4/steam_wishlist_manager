@@ -66,6 +66,10 @@ class DatabaseRepo {
     });
   }
 
+  static Future<void> unwishlistGame(String uid, int gid) async {
+    await supabase.from("wishlist").delete().eq("uid", uid).eq("gid", gid);
+  }
+
   static Future<List<Game>> getWishlistedGames(String uid) async {
     final response = await supabase
         .from('game')
@@ -84,6 +88,15 @@ class DatabaseRepo {
     }
 
     return games;
+  }
+
+  static Future<void> subscribe(String uid, int gid, int? dollarThreshold, int? percentThreshold) async {
+    await supabase.from("subscription").insert({
+      "uid": uid,
+      "gid": gid,
+      "dollarthreshold": dollarThreshold,
+      "percentthreshold": percentThreshold
+    });
   }
 
   static Game gameFromGameMap(Map<String, dynamic> gameMap) {

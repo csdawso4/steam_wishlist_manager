@@ -7,7 +7,7 @@ import '../../data/repositories/DatabaseRepo.dart';
 import '../../data/repositories/FirebaseRepo.dart';
 import '../../data/repositories/SteamRepo.dart';
 import '../SignIn/SignInViewModel.dart';
-import '../WishlistTile.dart';
+import '../core/WishlistTile.dart';
 
 class WishlistViewModel extends ChangeNotifier {
   WishlistViewModel({required this.user, required this.wishlistedGames});
@@ -83,10 +83,19 @@ class WishlistViewModel extends ChangeNotifier {
       List<WishlistTile> wishlistTiles = List.empty(growable: true);
 
       for (var game in wishlistedGames) {
-        wishlistTiles.add(WishlistTile(game: game));
+        wishlistTiles.add(WishlistTile(game: game, wishlistVM: this));
       }
 
       return Column(children: wishlistTiles);
     }
+  }
+  
+  void removeGame(int gid) {
+    //remove from local list and update ui
+    wishlistedGames.removeWhere((game) => game.gid == gid);
+    notifyListeners();
+    
+    //remove from database
+    DatabaseRepo.unwishlistGame(user.uid, gid);
   }
 }
