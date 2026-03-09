@@ -17,7 +17,26 @@ class WishlistView extends StatelessWidget {
             children: [
               Text("Welcome ${wishlistVM.user.username}!"),
               SizedBox(height: 20),
-              Text("<WISHLIST>"),
+              SearchAnchor(
+                builder: (BuildContext context, SearchController controller) {
+                  return SearchBar(
+                    controller: controller,
+                    padding: const WidgetStatePropertyAll<EdgeInsets>(
+                      EdgeInsets.symmetric(horizontal: 16.0),
+                    ),
+                    leading: FloatingActionButton(
+                      onPressed: () {
+                        controller.openView();
+                      },
+                      child: const Icon(Icons.search),
+                    ),
+                  );
+                },
+                suggestionsBuilder:
+                    (BuildContext context, SearchController controller) {
+                      return wishlistVM.search(controller);
+                    },
+              ),
               SizedBox(height: 20),
               FloatingActionButton(
                 onPressed: () => {wishlistVM.signOut(context)},
