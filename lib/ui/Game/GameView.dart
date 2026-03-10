@@ -33,17 +33,17 @@ class GameView extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Image.network(gameVM.game.capsuleimgurl),
+                      Image.network(gameVM.game.game.capsuleimgurl),
                       SizedBox(width: 10),
-                      Text(gameVM.game.name),
+                      Text(gameVM.game.game.name),
                     ],
                   ),
                   Row(
                     children: [
-                      if (gameVM.game.currentpercent != 0)
-                        Text("-${gameVM.game.currentpercent}%"),
+                      if (gameVM.game.game.currentpercent != 0)
+                        Text("-${gameVM.game.game.currentpercent}%"),
                       SizedBox(width: 10),
-                      Price(price: gameVM.game.currentprice),
+                      Price(price: gameVM.game.game.currentprice),
                     ],
                   ),
                 ],
@@ -52,70 +52,122 @@ class GameView extends StatelessWidget {
                 children: [
                   Text("Best recorded price:"),
                   SizedBox(width: 10),
-                  Text("-${gameVM.game.currentpercent}%"),
+                  Text("-${gameVM.game.game.currentpercent}%"),
                   SizedBox(width: 10),
-                  Price(price: gameVM.game.currentprice),
+                  Price(price: gameVM.game.game.currentprice),
                 ],
               ),
-              Text(gameVM.game.shortdesc),
+              Text(gameVM.game.game.shortdesc),
               SizedBox(height: 10),
-              Row(
-                children: [
-                  Text("Create a notification threshold using "),
-                  SizedBox(
-                    width: 200,
-                    child: DropdownMenu(
-                      initialSelection: SubscriptionType.dollar,
-                      dropdownMenuEntries: [
-                        DropdownMenuEntry(
-                          value: SubscriptionType.dollar,
-                          label: "Dollar Amount",
-                        ),
-                        DropdownMenuEntry(
-                          value: SubscriptionType.percent,
-                          label: "Percent Discount",
-                        ),
-                      ],
-                      onSelected: (type) {
-                        gameVM.setSubscriptionType(
-                          type ?? SubscriptionType.dollar,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
               ListenableBuilder(
                 listenable: gameVM,
                 builder: (BuildContext context, Widget? child) {
-                  if (gameVM.subscriptionType == SubscriptionType.dollar) {
-                    return Row(
-                      children: [
-                        Text("Notify me when this game drops below \$"),
-                        SizedBox(width: 200, child: TextField(onChanged: (text) {gameVM.dollarInput = text;}))
-                      ],
+                  if (gameVM.game.subscription != null) {
+                    return Card(
+                      child: Column(
+                        children: [
+                          (gameVM.game.subscription!.type ==
+                                  SubscriptionType.dollar)
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      "You will be notified when this game drops below ",
+                                    ),
+                                    Price(
+                                      price: gameVM
+                                          .game
+                                          .subscription!
+                                          .dollarthreshold!,
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  "You will be notified when this game drops below -${gameVM.game.subscription!.percentthreshold}% discount",
+                                ),
+                          ElevatedButton(
+                            onPressed: () {
+                              gameVM.unsubscribe();
+                            },
+                            child: Text(
+                              "Unsubscribe from notifications for this game",
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   } else {
-                    return Row(
-                      children: [
-                        Text("Notify me when this game drops below "),
-                        SizedBox(width: 200, child: TextField(onChanged: (text) {gameVM.percentInput = text;})),
-                        Text("% discount"),
-                      ],
+                    return Card(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text("Create a notification threshold using "),
+                              SizedBox(
+                                width: 200,
+                                child: DropdownMenu(
+                                  initialSelection: SubscriptionType.dollar,
+                                  dropdownMenuEntries: [
+                                    DropdownMenuEntry(
+                                      value: SubscriptionType.dollar,
+                                      label: "Dollar Amount",
+                                    ),
+                                    DropdownMenuEntry(
+                                      value: SubscriptionType.percent,
+                                      label: "Percent Discount",
+                                    ),
+                                  ],
+                                  onSelected: (type) {
+                                    gameVM.setSubscriptionType(
+                                      type ?? SubscriptionType.dollar,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          (gameVM.subscriptionType == SubscriptionType.dollar)
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      "Notify me when this game drops below \$",
+                                    ),
+                                    SizedBox(
+                                      width: 200,
+                                      child: TextField(
+                                        onChanged: (text) {
+                                          gameVM.dollarInput = text;
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Text(
+                                      "Notify me when this game drops below ",
+                                    ),
+                                    SizedBox(
+                                      width: 200,
+                                      child: TextField(
+                                        onChanged: (text) {
+                                          gameVM.percentInput = text;
+                                        },
+                                      ),
+                                    ),
+                                    Text("% discount"),
+                                  ],
+                                ),
+                          ElevatedButton(
+                            onPressed: () {
+                              gameVM.subscribe();
+                            },
+                            child: Text("Create Notification Subscription"),
+                          ),
+                          Text(gameVM.errorMsg ?? ""),
+                        ],
+                      ),
                     );
                   }
-                },
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  gameVM.subscribe();
-                },
-                child: Text("Create Notification Subscription"),
-              ),
-              ListenableBuilder(
-                listenable: gameVM,
-                builder: (BuildContext context, Widget? child) {
-                  return Text(gameVM.errorMsg ?? "");
                 },
               ),
             ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInView.dart';
 import '../../data/models/Game.dart';
 import '../../data/models/SWMUser.dart';
+import '../../data/models/WishlistedGame.dart';
 import '../../data/repositories/DatabaseRepo.dart';
 import '../../data/repositories/FirebaseRepo.dart';
 import '../../data/repositories/SteamRepo.dart';
@@ -17,7 +18,7 @@ class WishlistViewModel extends ChangeNotifier {
   }
 
   final SWMUser user;
-  List<Game> wishlistedGames;
+  List<WishlistedGame> wishlistedGames;
 
   Future<void> signOut(BuildContext context) async {
     try {
@@ -68,8 +69,13 @@ class WishlistViewModel extends ChangeNotifier {
       //add the game to database wishlist
       DatabaseRepo.wishlistGame(user.uid, gid);
 
-      //add game to local wishlist and refresh
-      wishlistedGames.add(game);
+      // convert to a wishlisted game, add game to local wishlist and refresh
+      var wishlistedGame = WishlistedGame(
+          game: game,
+          wishlistedat: DateTime.now(),
+          subscription: null
+      );
+      wishlistedGames.add(wishlistedGame);
       notifyListeners();
     }
   }
@@ -92,7 +98,7 @@ class WishlistViewModel extends ChangeNotifier {
   
   void removeGame(int gid) {
     //remove from local list and update ui
-    wishlistedGames.removeWhere((game) => game.gid == gid);
+    wishlistedGames.removeWhere((wishlistedGame) => wishlistedGame.game.gid == gid);
     notifyListeners();
     
     //remove from database

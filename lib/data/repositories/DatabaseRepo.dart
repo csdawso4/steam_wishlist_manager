@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
+import 'package:steam_wishlist_manager/ui/Game/GameViewModel.dart';
 
 import '../models/Game.dart';
 import '../models/SWMUser.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
+
+import '../models/WishlistedGame.dart';
 
 class DatabaseRepo {
   static final supabase = Supabase.instance.client;
@@ -39,7 +42,7 @@ class DatabaseRepo {
         return null;
       }
       Map<String, dynamic> gameMap = response[0];
-      return gameFromGameMap(gameMap);
+      return gameFromMap(gameMap);
     } on Exception catch (e) {
       debugPrint("$e");
       return null;
@@ -55,60 +58,101 @@ class DatabaseRepo {
       "currentprice": game.currentprice,
       "currentpercent": game.currentpercent,
       "bestrecordedprice": game.bestrecordedprice,
-      "bestrecordedpercent": game.bestrecordedpercent
+      "bestrecordedpercent": game.bestrecordedpercent,
     });
   }
 
   static Future<void> wishlistGame(String uid, int gid) async {
-    await supabase.from("wishlist").insert({
-      "uid": uid,
-      "gid": gid
-    });
+    await supabase.from("wishlist").insert({"uid": uid, "gid": gid});
   }
 
   static Future<void> unwishlistGame(String uid, int gid) async {
     await supabase.from("wishlist").delete().eq("uid", uid).eq("gid", gid);
   }
 
-  static Future<List<Game>> getWishlistedGames(String uid) async {
+  static Future<List<WishlistedGame>> getWishlistedGames(String uid) async {
     final response = await supabase
-        .from('game')
+        .from('wishlist')
         .select('''
     *,
-    wishlist!inner (
-      uid
-    )
+    game (*),
+    subscription (*)
   ''')
-        .eq('wishlist.uid', uid);
+        .eq('uid', uid);
 
-    List<Game> games = List.empty(growable: true);
+    List<WishlistedGame> wishlistedGames = List.empty(growable: true);
 
-    for (var gameMap in response) {
-      games.add(gameFromGameMap(gameMap));
+    for (var wishlistedGameMap in response) {
+      wishlistedGames.add(wishlistedGameFromMap(wishlistedGameMap));
     }
 
-    return games;
+    return wishlistedGames;
   }
 
-  static Future<void> subscribe(String uid, int gid, int? dollarThreshold, int? percentThreshold) async {
+  static Future<void> subscribe(
+    String uid,
+    int gid,
+    int? dollarThreshold,
+    int? percentThreshold,
+  ) async {
     await supabase.from("subscription").insert({
       "uid": uid,
       "gid": gid,
       "dollarthreshold": dollarThreshold,
-      "percentthreshold": percentThreshold
+      "percentthreshold": percentThreshold,
     });
   }
 
-  static Game gameFromGameMap(Map<String, dynamic> gameMap) {
+  static Future<void> unsubscribe(
+      String uid,
+      int gid
+      ) async {
+    await supabase.from("subscription").delete().eq("uid", uid).eq("gid", gid);
+  }
+
+  static WishlistedGame wishlistedGameFromMap(
+    Map<String, dynamic> wishlistedGameMap,
+  ) {
+    return WishlistedGame(
+      game: gameFromMap(wishlistedGameMap["game"] as Map<String, dynamic>),
+      wishlistedat: DateTime.parse(wishlistedGameMap["wishlistedat"]),
+      subscription: subscriptionFromMap(
+        wishlistedGameMap["subscription"] as Map<String, dynamic>?,
+      )
+    );
+  }
+
+  static Game gameFromMap(Map<String, dynamic> gameMap) {
     return Game(
-        gid: gameMap["gid"],
-        name: gameMap["name"],
-        shortdesc: gameMap["shortdesc"],
-        capsuleimgurl: gameMap["capsuleimgurl"],
-        currentprice: gameMap["currentprice"],
-        currentpercent: gameMap["currentpercent"],
-        bestrecordedprice: gameMap["bestrecordedprice"],
-        bestrecordedpercent: gameMap["bestrecordedpercent"]
+      gid: gameMap["gid"],
+      name: gameMap["name"],
+      shortdesc: gameMap["shortdesc"],
+      capsuleimgurl: gameMap["capsuleimgurl"],
+      currentprice: gameMap["currentprice"],
+      currentpercent: gameMap["currentpercent"],
+      bestrecordedprice: gameMap["bestrecordedprice"],
+      bestrecordedpercent: gameMap["bestrecordedpercent"],
+    );
+  }
+
+  static Subscription? subscriptionFromMap(
+    Map<String, dynamic>? subscriptionMap,
+  ) {
+    if (subscriptionMap == null) {
+      return null;
+    }
+
+    int? dollarthreshold = subscriptionMap["dollarthreshold"];
+    int? percentthreshold = subscriptionMap["percentthreshold"];
+    SubscriptionType type = SubscriptionType.dollar;
+    if (percentthreshold != null) {
+      type = SubscriptionType.percent;
+    }
+
+    return Subscription(
+      type: type,
+      dollarthreshold: dollarthreshold,
+      percentthreshold: percentthreshold,
     );
   }
 }

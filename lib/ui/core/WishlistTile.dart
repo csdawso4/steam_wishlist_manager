@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
-import '../../data/models/Game.dart';
+import '../../data/models/WishlistedGame.dart';
 import '../Game/GameView.dart';
 import '../Game/GameViewModel.dart';
 import 'Price.dart';
 
 class WishlistTile extends StatelessWidget {
-  final Game game;
+  final WishlistedGame game;
   final WishlistViewModel wishlistVM;
 
   WishlistTile({required this.game, required this.wishlistVM});
@@ -28,19 +28,21 @@ class WishlistTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Image.network(game.capsuleimgurl),
+              (game.subscription != null) ? Icon(Icons.notifications) : Icon(Icons.notifications_none),
               SizedBox(width: 10),
-              Text(game.name),
+              Image.network(game.game.capsuleimgurl),
+              SizedBox(width: 10),
+              Text(game.game.name),
             ],
           ),
           Row(
             children: [
-              if (game.currentpercent != 0) Text("-${game.currentpercent}%"),
+              if (game.game.currentpercent != 0) Text("-${game.game.currentpercent}%"),
               SizedBox(width: 10),
-              Price(price: game.currentprice),
+              Price(price: game.game.currentprice),
               SizedBox(width: 10),
               ElevatedButton(onPressed: () {
-                wishlistVM.removeGame(game.gid);
+                wishlistVM.removeGame(game.game.gid);
               }, child: Icon(Icons.delete))
             ],
           )

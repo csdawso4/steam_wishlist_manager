@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
-import '../../data/models/Game.dart';
+import '../../data/models/WishlistedGame.dart';
 import '../../data/repositories/DatabaseRepo.dart';
 import '../Wishlist/WishlistView.dart';
 
 class GameViewModel extends ChangeNotifier {
-  Game game;
+  WishlistedGame game;
   WishlistViewModel wishlistVM;
   SubscriptionType subscriptionType = SubscriptionType.dollar;
   String? dollarInput;
@@ -44,7 +44,8 @@ class GameViewModel extends ChangeNotifier {
             dollarInput = "${dollarInput}00";
           }
           var dollarInt = int.parse(dollarInput!.replaceAll(".", ""));
-          DatabaseRepo.subscribe(wishlistVM.user.uid, game.gid, dollarInt, null);
+          DatabaseRepo.subscribe(wishlistVM.user.uid, game.game.gid, dollarInt, null);
+          game.subscription = Subscription(type: subscriptionType, dollarthreshold: dollarInt, percentthreshold: null);
           errorMsg = null;
         } on Exception catch (e) {
           errorMsg = "Please enter a valid dollar amount";
@@ -59,7 +60,8 @@ class GameViewModel extends ChangeNotifier {
           if (percentInt < 1 || percentInt > 100) {
             throw Exception("Invalid int for percent range");
           }
-          DatabaseRepo.subscribe(wishlistVM.user.uid, game.gid, null, percentInt);
+          DatabaseRepo.subscribe(wishlistVM.user.uid, game.game.gid, null, percentInt);
+          game.subscription = Subscription(type: subscriptionType, dollarthreshold: null, percentthreshold: percentInt);
           errorMsg = null;
         } on Exception catch (e) {
           errorMsg = "Please enter a valid percent: 1-100";
@@ -68,6 +70,12 @@ class GameViewModel extends ChangeNotifier {
         errorMsg = "Please enter a valid percent: 1-100";
       }
     }
+    notifyListeners();
+  }
+
+  void unsubscribe() {
+    DatabaseRepo.unsubscribe(wishlistVM.user.uid, game.game.gid);
+    game.subscription = null;
     notifyListeners();
   }
 }
