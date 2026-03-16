@@ -28,7 +28,7 @@ class SignInView extends StatelessWidget {
               ListenableBuilder(
                 listenable: signInVM,
                 builder: (BuildContext context, Widget? child) {
-                  return Text(signInVM.errorMsg ?? "");
+                  return Text(signInVM.errorMsg ?? "", style: TextStyle(color: Colors.red));
                 },
               ),
               SizedBox(height: 20),

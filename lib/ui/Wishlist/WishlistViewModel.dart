@@ -1,20 +1,30 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInView.dart';
-import '../../data/models/Game.dart';
 import '../../data/models/SWMUser.dart';
 import '../../data/models/WishlistedGame.dart';
 import '../../data/repositories/DatabaseRepo.dart';
 import '../../data/repositories/FirebaseRepo.dart';
 import '../../data/repositories/SteamRepo.dart';
 import '../SignIn/SignInViewModel.dart';
-import '../core/WishlistTile.dart';
+import 'WishlistView.dart';
 
 class WishlistViewModel extends ChangeNotifier {
   WishlistViewModel({required this.user, required this.wishlistedGames});
 
   static Future<WishlistViewModel> create(SWMUser user) async {
-    return WishlistViewModel(user: user, wishlistedGames: await DatabaseRepo.getWishlistedGames(user.uid));
+    debugPrint("setting current_uid to \"${user.uid}\" in sharedprefs");
+    debugPrint("setting current_user_fcm_token to \"${user.fcmtoken}\" in sharedprefs");
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString("current_uid", user.uid);
+    prefs.setString("current_user_fcm_token", user.fcmtoken ?? "");
+    FirebaseRepo.pushNewTokenIfNecessary(prefs);
+
+    return WishlistViewModel(
+      user: user,
+      wishlistedGames: await DatabaseRepo.getWishlistedGames(user.uid),
+    );
   }
 
   final SWMUser user;
@@ -71,20 +81,22 @@ class WishlistViewModel extends ChangeNotifier {
 
       // convert to a wishlisted game, add game to local wishlist and refresh
       var wishlistedGame = WishlistedGame(
-          game: game,
-          wishlistedat: DateTime.now(),
-          subscription: null
+        game: game,
+        wishlistedat: DateTime.now(),
+        subscription: null,
       );
       wishlistedGames.add(wishlistedGame);
       notifyListeners();
     }
   }
 
-  Widget getWishlist() {
+  List<Widget> getWishlist() {
     if (wishlistedGames.isEmpty) {
-      return Text(
-        "You have no games in your wishlist. Try searching for some above.",
-      );
+      return [
+        Text(
+          "You have no games in your wishlist. Try searching for some above.",
+        ),
+      ];
     } else {
       List<WishlistTile> wishlistTiles = List.empty(growable: true);
 
@@ -92,15 +104,17 @@ class WishlistViewModel extends ChangeNotifier {
         wishlistTiles.add(WishlistTile(game: game, wishlistVM: this));
       }
 
-      return Column(children: wishlistTiles);
+      return wishlistTiles;
     }
   }
-  
+
   void removeGame(int gid) {
     //remove from local list and update ui
-    wishlistedGames.removeWhere((wishlistedGame) => wishlistedGame.game.gid == gid);
+    wishlistedGames.removeWhere(
+      (wishlistedGame) => wishlistedGame.game.gid == gid,
+    );
     notifyListeners();
-    
+
     //remove from database
     DatabaseRepo.unwishlistGame(user.uid, gid);
   }

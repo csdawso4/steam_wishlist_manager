@@ -39,7 +39,7 @@ class CreateAccountView extends StatelessWidget {
               ListenableBuilder(
                 listenable: createAccountVM,
                 builder: (BuildContext context, Widget? child) {
-                  return Text(createAccountVM.errorMsg ?? "");
+                  return Text(createAccountVM.errorMsg ?? "", style: TextStyle(color: Colors.red));
                 },
               ),
             ],
