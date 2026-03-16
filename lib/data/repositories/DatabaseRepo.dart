@@ -17,7 +17,7 @@ class DatabaseRepo {
       uid: userMap["uid"],
       email: userMap["email"],
       username: userMap["username"],
-      firebaseIDs: List<String>.from(userMap["firebaseids"]),
+      fcmtoken: userMap["fcmtoken"],
     );
   }
 
@@ -30,9 +30,14 @@ class DatabaseRepo {
       "uid": uid,
       "username": username,
       "email": email,
-      "firebaseids": [],
+      "fcmtoken": null,
     });
-    return SWMUser(uid: uid, email: email, username: username, firebaseIDs: []);
+    return SWMUser(uid: uid, email: email, username: username, fcmtoken: null);
+  }
+
+  static Future<void> updateFcmToken(String uid, String token) async {
+    var junk = await supabase.from("users").update({"fcmtoken": token}).eq("uid", uid).select();
+    debugPrint(junk.toString());
   }
 
   static Future<Game?> getGame(int gid) async {

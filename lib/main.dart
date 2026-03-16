@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInView.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInViewModel.dart';
@@ -7,6 +8,7 @@ import 'package:steam_wishlist_manager/ui/Wishlist/WishlistView.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
 import 'data/models/SWMUser.dart';
 import 'data/repositories/DatabaseRepo.dart';
+import 'data/repositories/FirebaseRepo.dart';
 import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
@@ -17,6 +19,9 @@ Future<void> main() async {
     url: 'https://omwsjuhjvdtrumtxrbdc.supabase.co',
     anonKey: 'sb_publishable_-iBJqiDtWU5phXmV4ZBJYA_R2cEVn_n',
   );
+
+  FirebaseRepo.initializeMessaging();
+
   FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) async {
     SWMUser? user;
     WishlistViewModel? wishlistVM;
