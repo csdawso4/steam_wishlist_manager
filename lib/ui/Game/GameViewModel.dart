@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
 import '../../data/models/WishlistedGame.dart';
@@ -37,6 +38,7 @@ class GameViewModel extends ChangeNotifier {
   void subscribe() {
     debugPrint("dollarInput is $dollarInput");
     debugPrint("percentInput is $percentInput");
+
     if (subscriptionType == SubscriptionType.dollar) {
       if (dollarInput != null && RegExp(r'[0-9]+(.[0-9][0-9])?').hasMatch(dollarInput!)) {
         try {
@@ -47,6 +49,7 @@ class GameViewModel extends ChangeNotifier {
           DatabaseRepo.subscribe(wishlistVM.user.uid, game.game.gid, dollarInt, null);
           game.subscription = Subscription(type: subscriptionType, dollarthreshold: dollarInt, percentthreshold: null);
           errorMsg = null;
+          FirebaseMessaging.instance.requestPermission(provisional: false);
         } on Exception catch (e) {
           errorMsg = "Please enter a valid dollar amount";
         }
@@ -63,6 +66,7 @@ class GameViewModel extends ChangeNotifier {
           DatabaseRepo.subscribe(wishlistVM.user.uid, game.game.gid, null, percentInt);
           game.subscription = Subscription(type: subscriptionType, dollarthreshold: null, percentthreshold: percentInt);
           errorMsg = null;
+          FirebaseMessaging.instance.requestPermission(provisional: false);
         } on Exception catch (e) {
           errorMsg = "Please enter a valid percent: 1-100";
         }
