@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInView.dart';
 import 'package:steam_wishlist_manager/ui/SignIn/SignInViewModel.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistView.dart';
 import 'package:steam_wishlist_manager/ui/Wishlist/WishlistViewModel.dart';
+import 'data/models/SWMUser.dart';
+import 'data/repositories/DatabaseRepo.dart';
+import 'data/repositories/FirebaseRepo.dart';
 import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
@@ -15,15 +19,25 @@ Future<void> main() async {
     url: 'https://omwsjuhjvdtrumtxrbdc.supabase.co',
     anonKey: 'sb_publishable_-iBJqiDtWU5phXmV4ZBJYA_R2cEVn_n',
   );
-  FirebaseAuth.instance.authStateChanges().listen((User? user) {
-    runApp(MyApp(user: user));
+
+  FirebaseRepo.initializeMessaging();
+
+  FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) async {
+    SWMUser? user;
+    WishlistViewModel? wishlistVM;
+    if (firebaseUser != null) {
+      user = await DatabaseRepo.getUser(firebaseUser.uid);
+      wishlistVM = await WishlistViewModel.create(user);
+    }
+    runApp(MyApp(user: user, wishlistVM: wishlistVM));
   });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.user});
+  const MyApp({super.key, required this.user, required this.wishlistVM});
 
-  final User? user;
+  final SWMUser? user;
+  final WishlistViewModel? wishlistVM;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +46,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: (user == null) ? SignInView(signInVM: SignInViewModel()) : WishlistView(wishlistVM: WishlistViewModel(user: user!)),
+      home: (user == null)
+          ? SignInView(signInVM: SignInViewModel())
+          : WishlistView(wishlistVM: wishlistVM!),
     );
   }
 }

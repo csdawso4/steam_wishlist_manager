@@ -43,3 +43,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/lambda/lambda.zip
+/lambda/serviceAccountKey.json
